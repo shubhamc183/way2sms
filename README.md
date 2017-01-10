@@ -4,13 +4,14 @@ Send upto 100 free [SMS](http://site24.way2sms.com/content/index.html) within 10
 
 [Way2Sms](http://site24.way2sms.com/content/index.html) provides free SMS service upto **100** messages daily with message length upto **139**. 
 
+Either be in same directory or add this file in python path..!
 ```python
 import way2sms
 ```
 -  Login
 
   ```python
-q=login.sms(username,password)
+q=way2sms.sms(username,password)
   ```
 - Send SMS, returns True if sent
 
