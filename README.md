@@ -55,8 +55,7 @@ $ sudo apt-get install python3-pip
  ```
  
  
-### Todos
 
- - Future Message
+Future Message added by [AbdHan](https://github.com/abdhan)
  
 **Free Messaging, Hell Yeah!**
