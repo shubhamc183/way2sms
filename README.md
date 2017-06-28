@@ -16,7 +16,7 @@ q=way2sms.sms(username,password)
 - Send SMS, returns True if sent
 
   ```python
-  q.send(mobile_number,message)
+  q.send( 'mobile_number', 'message' )      # both are STRING
   ```
 - Message Sent today, returns the number
 
