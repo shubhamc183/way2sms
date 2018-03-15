@@ -26,13 +26,17 @@ class sms:
 
 		self.loggedIn=False				# a variable of knowing whether logged in or not
 
-		if self.q.status_code!=200:			# http status 200 == OK
+		if "http://site24.way2sms.com/main.action" in self.q.url:			# http status 200 == OK
 
-			self.loggedIn=False
+			print("Successfully logged in..!")
+
+			self.loggedIn=True
 
 		else:
 
-			self.loggedIn=True
+			print("Can't login, once check credential..!")
+
+			self.loggedIn=False
 
 		self.jsid=self.s.cookies.get_dict()['JSESSIONID'][4:]	    # JSID is the main KEY as JSID are produced every time a session satrts
 
@@ -41,6 +45,10 @@ class sms:
 		'''
 		Returns number of SMS sent today as there is a limit of 100 messages everyday..!
 		'''
+
+		if self.loggedIn == False:
+			print("Can't perform since NOT logged in..!")
+			return -1
 
 		self.msg_left_url='http://site24.way2sms.com/sentSMS?Token='+self.jsid
 
@@ -65,6 +73,10 @@ class sms:
 		'''
 		Sends the message to the given mobile number
 		'''
+
+		if self.loggedIn == False:
+			print("Can't perform since NOT logged in..!")
+			return False
 
 		if len(msg)>139 or len(mobile_no)!=10 or not mobile_no.isdecimal():	#checks whether the given message is of length more than 139
 
@@ -91,6 +103,11 @@ class sms:
 	def sendLater(self, mobile_no, msg, date, time):				#Function for future SMS feature.
 											#date must be in dd/mm/yyyy format
 											#time must be in 24hr format. For ex: 18:05
+
+		if self.loggedIn == False:
+			print("Can't perform since NOT logged in..!")
+			return False
+		
 		if len(msg)>139 or len(mobile_no)!=10 or not mobile_no.isdecimal():
 			return False
 
