@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+
+#".*//"
 class sms:
 
 	def __init__(self,username,password):
@@ -10,7 +12,7 @@ class sms:
 		and try to log in
 		'''
 
-		self.url='http://site24.way2sms.com/Login1.action?'
+		self.url='http://www.way2sms.com/Login1.action?'
 
 		self.cred={'username': username, 'password': password}
 
@@ -20,13 +22,15 @@ class sms:
 		changing s.headers['User-Agent'] to spoof that python is requesting
 		'''
 
-		self.s.headers['User-Agent']="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"
+		self.s.headers['User-Agent'] = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"
+		self.s.headers['Referer'] = "http://www.way2sms.com/content/index.html"
+		self.s.headers['Host'] = "www.way2sms.com"
 
 		self.q=self.s.post(self.url,data=self.cred)
 
 		self.loggedIn=False				# a variable of knowing whether logged in or not
 
-		if "http://site24.way2sms.com/main.action" in self.q.url:			# http status 200 == OK
+		if "http://www.way2sms.com/main.action" in self.q.url:			# http status 200 == OK
 
 			print("Successfully logged in..!")
 
@@ -50,7 +54,7 @@ class sms:
 			print("Can't perform since NOT logged in..!")
 			return -1
 
-		self.msg_left_url='http://site24.way2sms.com/sentSMS?Token='+self.jsid
+		self.msg_left_url='http://www.way2sms.com/sentSMS?Token='+self.jsid
 
 		self.q=self.s.get(self.msg_left_url)
 
@@ -89,7 +93,7 @@ class sms:
 			        'msgLen':'129'
        			     }
 
-		self.msg_url='http://site24.way2sms.com/smstoss.action'
+		self.msg_url='http://www.way2sms.com/smstoss.action'
 
 		self.q=self.s.post(self.msg_url,data=self.payload)
 
@@ -126,7 +130,7 @@ class sms:
 				'msgLen':'129'
 				}
 
-		self.msg_url='http://site24.way2sms.com/schedulesms.action'
+		self.msg_url='http://www.way2sms.com/schedulesms.action'
 		self.q=self.s.post(self.msg_url, data=self.payload)
 
 		if self.q.status_code==200:
@@ -136,7 +140,7 @@ class sms:
 
 	def logout(self):
 
-		self.s.get('http://site24.way2sms.com/entry?ec=0080&id=dwks')
+		self.s.get('http://www.way2sms.com/entry?ec=0080&id=dwks')
 
 		self.s.close()								# close the Session
 
