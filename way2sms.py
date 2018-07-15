@@ -3,46 +3,46 @@ from bs4 import BeautifulSoup
 
 
 #".*//"
-class sms:
+class Sms:
 
-	def __init__(self,username,password):
-
-		'''
-		Takes username and password as parameters for constructors
-		and try to log in
-		'''
-
-		self.url='http://www.way2sms.com/Login1.action?'
-
-		self.cred={'username': username, 'password': password}
-
-		self.s=requests.Session()			# Session because we want to maintain the cookies
+	def __init__(self, mobileNo, password):
 
 		'''
-		changing s.headers['User-Agent'] to spoof that python is requesting
+		Takes mobileNo and password as parameters for constructors and try to log in
 		'''
 
-		self.s.headers['User-Agent'] = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"
-		self.s.headers['Referer'] = "http://www.way2sms.com/content/index.html"
-		self.s.headers['Host'] = "www.way2sms.com"
+		self.base_url = "http://www.way2sms.com/"
+		self.login_url = self.base_url + "re-login"
+		self.msg_url=  self.base_url + "smstoss"
+		self.future_msg_url = self.base_url + "schedulesms"
+		self.logout_url = self.base_url + "Logout"
 
-		self.q=self.s.post(self.url,data=self.cred)
+		self.session = requests.Session()	# Session because we want to maintain the cookies
+		self.session.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36"
+		self.session.get(self.base_url)		# once do a http GET to get the cookies       
 
-		self.loggedIn=False				# a variable of knowing whether logged in or not
+		#self.session.headers['Referer'] = self.base_url
+		#self.session.headers['Host'] = self.base_url
+		self.session.headers['X-Requested-With'] = 'XMLHttpRequest'
+		#self.session.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
+		#self.session.headers['Content-Length'] = '43'
+		self.set_cookies_header()
 
-		if "http://www.way2sms.com/main.action" in self.q.url:			# http status 200 == OK
+		self.payload = {'mobileNo': mobileNo, 'password': password, 'CatType' : ''}
+		self.q = self.session.post(self.login_url, data=self.payload)		# POST the payload
+		self.logged_in = False				# a variable of knowing whether logged in or not
 
+		if self.q.status_code == 200 and self.q.text == "send-sms":	# http status 200 == OK
 			print("Successfully logged in..!")
-
-			self.loggedIn=True
-
+			self.logged_in=True
 		else:
-
 			print("Can't login, once check credential..!")
+			self.logged_in=False
 
-			self.loggedIn=False
+		self.jsid = self.session.cookies.get_dict()['JSESSIONID'][4:]	    # JSID is the main KEY as JSID are produced every time a session satrts
 
-		self.jsid=self.s.cookies.get_dict()['JSESSIONID'][4:]	    # JSID is the main KEY as JSID are produced every time a session satrts
+	def set_cookies_header(self):
+		self.session.headers['Cookie'] = "JSESSIONID=" + self.session.cookies.get_dict()['JSESSIONID']
 
 	def msgSentToday(self):
 
@@ -50,26 +50,19 @@ class sms:
 		Returns number of SMS sent today as there is a limit of 100 messages everyday..!
 		'''
 
-		if self.loggedIn == False:
+		if self.logged_in == False:
 			print("Can't perform since NOT logged in..!")
 			return -1
 
 		self.msg_left_url='http://www.way2sms.com/sentSMS?Token='+self.jsid
-
-		self.q=self.s.get(self.msg_left_url)
-
+		self.q=self.session.get(self.msg_left_url)
 		self.soup=BeautifulSoup(self.q.text,'html.parser')		#we want the number of messages sent which is present in the
-
 		self.t=self.soup.find("div",{"class":"hed"}).h2.text		# div element with class "hed" -> h2
-
 		self.sent=0
 
 		for self.i in self.t:
-
 			if self.i.isdecimal():
-
 				self.sent=10*self.sent+int(self.i)
-
 		return self.sent
 
 	def send(self,mobile_no,msg):
@@ -78,37 +71,32 @@ class sms:
 		Sends the message to the given mobile number
 		'''
 
-		if self.loggedIn == False:
+		if self.logged_in == False:
 			print("Can't perform since NOT logged in..!")
 			return False
 
-		if len(msg)>139 or len(mobile_no)!=10 or not mobile_no.isdecimal():	#checks whether the given message is of length more than 139
+		if len(msg)>139 or len(mobile_no)!=10 or not mobile_no.isdecimal():	#checks whether the given message is of length more than 139 and mobile numnber is valid
+			return False							
 
-			return False							#or the mobile_no is valid
+		self.payload = {
+						'ssaction':'ss',
+						'Token':self.jsid,					#inorder to visualize how I came to these payload,
+			        	'toMobile':mobile_no,			#must see the NETWORK section in Inspect Element
+       				 	'message':msg,						#while messagin someone from your browser
+       			    }
 
-		self.payload={'ssaction':'ss',
-				'Token':self.jsid,					#inorder to visualize how I came to these payload,
-			        'mobile':mobile_no,					#must see the NETWORK section in Inspect Element
-       				 'message':msg,						#while messagin someone from your browser
-			        'msgLen':'129'
-       			     }
+		self.q=self.session.post(self.msg_url,data=self.payload)
 
-		self.msg_url='http://www.way2sms.com/smstoss.action'
-
-		self.q=self.s.post(self.msg_url,data=self.payload)
-
-		if self.q.status_code==200:
-
+		if self.q.status_code==200 and self.q.text == '0':
 			return True
-
 		else:
 			return False
 
-	def sendLater(self, mobile_no, msg, date, time):				#Function for future SMS feature.
+	def send_later(self, mobile_no, msg, date, time):				#Function for future SMS feature.
 											#date must be in dd/mm/yyyy format
 											#time must be in 24hr format. For ex: 18:05
 
-		if self.loggedIn == False:
+		if self.logged_in == False:
 			print("Can't perform since NOT logged in..!")
 			return False
 		
@@ -122,26 +110,20 @@ class sms:
 		date = dateparts[0].zfill(2) + "/" + dateparts[1].zfill(2) + "/" + dateparts[2]
 		time = timeparts[0].zfill(2) + ":" + timeparts[1].zfill(2)
 
-		self.payload={'Token':self.jsid,
-				'mobile':mobile_no,
-				'sdate':date,
-				'stime':time,
-				'message':msg,
-				'msgLen':'129'
-				}
+		self.payload = {'Token' : self.jsid,
+						'toMobile' : mobile_no,
+						'sdate' : date,
+						'stime' : time,
+						'message' : msg,
+					}
 
-		self.msg_url='http://www.way2sms.com/schedulesms.action'
-		self.q=self.s.post(self.msg_url, data=self.payload)
-
-		if self.q.status_code==200:
+		self.q = self.session.post(self.future_msg_url, data=self.payload)
+		if self.q.status_code == 200:
 			return True
 		else:
 			return False
 
 	def logout(self):
-
-		self.s.get('http://www.way2sms.com/entry?ec=0080&id=dwks')
-
-		self.s.close()								# close the Session
-
-		self.loggedIn=False
+		self.session.get(self.logout_url)
+		self.session.close()								# close the Session
+		self.logged_in=False
