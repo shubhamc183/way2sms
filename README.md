@@ -1,61 +1,23 @@
 # Way2Sms
 
-Send upto 100 free [SMS](http://site24.way2sms.com/content/index.html) within 10 seconds daily.
+Send upto 2 free [SMS](https://www.way2sms.com/) instantly.
 
-[Way2Sms](http://site24.way2sms.com/content/index.html) provides free SMS service upto **100** messages daily with message length upto **139**. 
+[Way2Sms](https://www.way2sms.com/) provides free SMS service upto 2 messages daily with message length upto **139**.
 
-Either be in same directory or add this file in python path..!
-```python
+## Install
+
+```
+pip3 install sch-way2sms==0.0.1
+```
+
+## Usage
+
+```
 import way2sms
+# your login credentials
+sms = way2sms.Sms("9XXXXXXXXX", "PASSWORD")
+sms.send("9XXXXXXXXX", "Hi, this package is awesome! Lets me send free messages")
+sms.logout()
 ```
--  Login
-
-  ```python
-q=way2sms.sms(username,password)
-  ```
-- Send SMS, returns True if sent
-
-  ```python
-  q.send( 'mobile_number', 'message' )      # both are STRING
-  ```
-- Message Sent today, returns the number
-
- ```python
- q.msgSentToday()
- ```
-- Logout
-
- ```python
- q.logout()
- ```
- 
-#Python3 and Packages
-
- * Install Python3
-
- ```sh
-$ sudo apt-get python3
-```
-
- * Install pip
-
- ```sh
-$ sudo apt-get install python3-pip
-```
-
- * Requests
-  
- ```sh
- $ sudo pip3 install requests
- ```
- * BeautifulSoup
- 
- ```sh
- $ sudo pip3 install beautifulsoup4
- ```
- 
- 
 
 Future Message added by [AbdHan](https://github.com/abdhan)
- 
-**Free Messaging, Hell Yeah!**
